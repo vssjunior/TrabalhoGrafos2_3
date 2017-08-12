@@ -45,11 +45,13 @@ public:
 
 class DataVertice{
 public:
+	int id;
 	double x;
 	double y;
 	double consumidores;
 	double demanda;
 	double cargaTrabalho;
+	double fuga;
 	
 	DataVertice(){
 		x = -1;
@@ -57,6 +59,7 @@ public:
 		consumidores = -1;
 	    demanda = -1;
 	    cargaTrabalho = -1;
+	    fuga = -1;
 	}
 };
 
@@ -73,7 +76,7 @@ public:
 	double lambdaCargaTrabalho;
 	double betaConsumidores;
 	double betaDemanda;
-	double betaCargaTrabolho;
+	double betaCargaTrabalho;
 	
 	InfoSubReg(){
 		qntReg = -1;
@@ -82,6 +85,6 @@ public:
 		lambdaCargaTrabalho = -1;
 		betaConsumidores = -1;
 		betaDemanda = -1;
-		betaCargaTrabolho = -1;
+		betaCargaTrabalho = -1;
 	}
 };
