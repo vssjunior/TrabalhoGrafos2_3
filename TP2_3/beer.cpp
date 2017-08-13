@@ -59,6 +59,14 @@ void quickSort(DataVertice** vertices , int left, int right, string param) {
 	quickSort(vertices, i, right, param);
 }
 
+void colorirVertices(DataVertice **vertices, SubRegioes **subReg, InfoSubReg infoSubReg){
+	for(int i = 0; i < infoSubReg.qntReg; i++){
+		for(int j = 0; j < subReg[i]->quantidadeDeVertices; j++){
+			vertices[subReg[i]->vertices[j]->id].cor = i;
+		}
+	}
+}
+
 void insertionSort(SubRegioes **subReg, int n)
 {
 	cout << "Chamou insert\n";
@@ -331,7 +339,9 @@ int main(int argc, char** argv){
 		
 		acharDescontinuidade(grafo, vertices, infoSubReg, subReg);
 		
+		quickSort(vertices, 0, tam-1, "id");
 		
+		colorirVertices(vertices, subReg, infoSubReg);
 	}
 	return 0;
 }
