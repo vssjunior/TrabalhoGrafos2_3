@@ -2,34 +2,61 @@
 #include <fstream>
 #include "grafos.cpp"
 #include "objetos.cpp"
+#include <cmath>
 #include <list>
 
 using namespace std;
 
-void quickSort(DataVertice** vertices , int left, int right) {
-      int i = left, j = right;
-      DataVertice* tmp;
-      double pivot = vertices[(left + right) / 2]->fuga;
-	  
-      while (i <= j) {
-            while (vertices[i]->fuga < pivot)
-                  i++;
-            while (vertices[j]->fuga > pivot)
-                  j--;
-                  
-            if (i <= j) {
-                  tmp = vertices[i];
-                  vertices[i] = vertices[j];
-                  vertices[j] = tmp;
-                  i++;
-                  j--;
-            }
-      };
-	  
-      if (left < j)
-            quickSort(vertices, left, j);
-      if (i < right)
-            quickSort(vertices, i, right);
+double calcularDistancia(DataVertice* vertice1, DataVertice* vertice2){
+	return (sqrt(pow((vertice1->x - vertice2->x), 2) + pow((vertice1->y - vertice2->y), 2)));
+}
+
+void quickSort(DataVertice** vertices , int left, int right, string param) {
+	int i = left, j = right;
+	DataVertice* tmp;
+	
+	if(param == "fuga"){
+		double pivot = vertices[(left + right) / 2]->fuga;
+
+		while (i <= j) {
+			while (vertices[i]->fuga < pivot)
+				  i++;
+			while (vertices[j]->fuga > pivot)
+				  j--;
+				  
+			if (i <= j) {
+				  tmp = vertices[i];
+				  vertices[i] = vertices[j];
+				  vertices[j] = tmp;
+				  i++;
+				  j--;
+			}
+		}
+	}
+	
+	else if(param == "id"){
+		int pivot = vertices[(left + right) / 2]->id;
+
+		while (i <= j) {
+			while (vertices[i]->id < pivot)
+				  i++;
+			while (vertices[j]->id > pivot)
+				  j--;
+				  
+			if (i <= j) {
+				  tmp = vertices[i];
+				  vertices[i] = vertices[j];
+				  vertices[j] = tmp;
+				  i++;
+				  j--;
+			}
+		}
+	}
+	
+	if (left < j)
+	quickSort(vertices, left, j, param);
+	if (i < right)
+	quickSort(vertices, i, right, param);
 }
 
 void insertionSort(SubRegioes **subReg, int n)
@@ -52,6 +79,7 @@ void insertionSort(SubRegioes **subReg, int n)
 }
 
 void montarSubRegiao(Grafo* grafo, DataVertice** vertices, InfoSubReg infoSubReg, SubRegioes **subReg){
+	//1º Passo
 	for(int i=0; i<infoSubReg.qntReg; i++){
 		
 		subReg[i]->vertices[0] = vertices[i];
@@ -61,6 +89,7 @@ void montarSubRegiao(Grafo* grafo, DataVertice** vertices, InfoSubReg infoSubReg
 		//cout << "subReg[" << i <<"]->vertices[0] = " << vertices[i]->id <<";\n"; 
 	}
 	
+	//2
 	int aux = infoSubReg.qntReg -1, pos;
 	double menorFuga = 1000000;
 	double fugaAchada;
@@ -228,7 +257,7 @@ int main(int argc, char** argv){
 			arq >> u;
 			arq >> v;
 			try{
-				grafo -> adicionarAresta(u, v, 1);
+				grafo -> adicionarAresta(u, v, calcularDistancia(vertices[u], vertices[v]));
 			}
 			catch(EdgeInsertionException e){
 			}
@@ -278,7 +307,7 @@ int main(int argc, char** argv){
 		}
 			
 		//cout  << endl;
-		quickSort(vertices, 0, tam-1);
+		quickSort(vertices, 0, tam-1, "fuga");
 		
 		
 	//	cout << infoSubReg.betaConsumidores << "consumidor\n";
@@ -301,6 +330,8 @@ int main(int argc, char** argv){
 		montarSubRegiao(grafo, vertices, infoSubReg, subReg);
 		
 		acharDescontinuidade(grafo, vertices, infoSubReg, subReg);
+		
+		
 	}
 	return 0;
 }

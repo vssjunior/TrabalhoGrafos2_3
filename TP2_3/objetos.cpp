@@ -45,6 +45,7 @@ public:
 
 class DataVertice{
 public:
+	int cor;
 	int id;
 	double x;
 	double y;
@@ -55,6 +56,7 @@ public:
 	bool adicionado;
 	
 	DataVertice(){
+		cor = -1;
 		x = -1;
 		y = -1;
 		consumidores = -1;
