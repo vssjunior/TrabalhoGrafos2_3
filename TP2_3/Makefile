@@ -1,4 +1,4 @@
 CPP = g++
-arvores.bin: arvores.cpp
-	$(CPP) arvores.cpp -o arvores.bin
-all: arvores.bin
+beer.bin: beer.cpp
+	$(CPP) beer.cpp -o beer.bin
+all: beer.bin
