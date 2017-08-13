@@ -163,106 +163,144 @@ void montarSubRegiao(Grafo* grafo, DataVertice** vertices, InfoSubReg infoSubReg
 	}*/
 }
 
-int main(){
-	
-	Grafo* grafo;
-	
-	int tam, arestas, u, v;
-	//string nomeArq = (argv[1]);
-	//nomeArq += ".txt";
-	ifstream arq("instances/n500-m1479-k15-2.input");
-	
-	arq >> tam;
-	grafo = new ListaDeAdjacencia(false);
-	grafo -> adicionarVertices(tam);
-	
-	DataVertice** vertices = new DataVertice*[tam];
-	for(int i=0; i<tam; i++){
-		vertices[i] = new DataVertice;
-		arq >> vertices[i]->id;
-		arq >> vertices[i]->x;
-		arq >> vertices[i]->y;
-		arq >> vertices[i]->consumidores;
-		arq >> vertices[i]->demanda;
-		arq >> vertices[i]->cargaTrabalho;
-	}
-	
-	arq >> arestas;
-	
-	for(int i=0; i<arestas; i++){
-		arq >> u;
-		arq >> v;
-		try{
-			grafo -> adicionarAresta(u, v, 1);
+void acharDescontinuidade(Grafo* grafo, DataVertice** vertices, InfoSubReg infoSubReg, SubRegioes **subReg){
+	bool descontinuo = true, temDescontinuidade = false;
+	for(int i=0; i < infoSubReg.qntReg; i++){
+		for(int fixo = 0; fixo < subReg[i] -> quantidadeDeVertices; fixo++){
+			descontinuo = true;
+			for(int percorre = 0; percorre < subReg[i] -> quantidadeDeVertices; percorre++){
+				if(fixo != percorre){
+					if(grafo -> isVizinho(subReg[i]->vertices[fixo]->id, subReg[i]->vertices[percorre]->id)){
+						descontinuo = false;
+					}
+				}
+			}
+			if(descontinuo){
+				cout << "Vertice: " << fixo << " está descontinuo\n";
+				temDescontinuidade = true;
+			}
 		}
-		catch(EdgeInsertionException e){
+	}
+	for(int i=0; i<grafo->getQuantVertices(); i++){
+		if(!vertices[i]->adicionado){
+			temDescontinuidade = true;
 		}
 	}
 	
-	//arq >> qnt_subReg;
-	
-	InfoSubReg infoSubReg;
+	if(temDescontinuidade){
+		cout << "\n\nO Grafo pussui Descontinuidade\n\n";
+	}
+	else { 			
+		cout << "\n\nO Grafo Não pussui Descontinuidade\n\n";
+	}
+}
 
-	arq >> infoSubReg.qntReg;
-	arq >> infoSubReg.lambdaConsumidores;
-	arq >> infoSubReg.lambdaDemanda;
-	arq >> infoSubReg.lambdaCargaTrabalho;
-	
-	
-	
-	arq.close();
-	
-	double somaConsu = 0;
-	double somaDeman = 0;
-	double somaCTrab = 0;
-	
-	for(int i = 0; i < tam; i++){
-		somaConsu += vertices[i]->consumidores;
-		somaDeman += vertices[i]->demanda;
-		somaCTrab += vertices[i]->cargaTrabalho;
+int main(int argc, char** argv){
+	if(argc != 2){
+		cerr << "Uso: ./beer.bin instances/nomeDoArquivo " << endl << endl;
 	}
-	
-	infoSubReg.betaConsumidores = (somaConsu/infoSubReg.qntReg);
-	infoSubReg.betaDemanda = (somaDeman/infoSubReg.qntReg);
-	infoSubReg.betaCargaTrabalho = (somaCTrab/infoSubReg.qntReg);
-	
-	
-	double auxConsumidores, auxDemanda, auxCargaTrabalho;
-	
-	
-	for(int i=0; i<tam; i++){
-		auxConsumidores = (vertices[i]->consumidores - infoSubReg.betaConsumidores) ;
-		auxDemanda = (vertices[i]->demanda - infoSubReg.betaDemanda);
-		auxCargaTrabalho = (vertices[i]->cargaTrabalho - infoSubReg.betaCargaTrabalho);
+	else{
+		Grafo* grafo;
 		
-		auxConsumidores = (auxConsumidores > 0) ? auxConsumidores : auxConsumidores*(-1);
-		auxDemanda = (auxDemanda > 0) ? auxDemanda : auxDemanda*(-1);
-		auxCargaTrabalho = (auxCargaTrabalho > 0) ? auxCargaTrabalho : auxCargaTrabalho*(-1);
+		int tam, arestas, u, v;
+		string nomeArq = (argv[1]);
+		nomeArq += ".input";
+		ifstream arq(nomeArq.c_str());
 		
-		vertices[i]->fuga = auxConsumidores + auxDemanda + auxCargaTrabalho;
-	}
+		arq >> tam;
+		grafo = new ListaDeAdjacencia(false);
+		grafo -> adicionarVertices(tam);
 		
-	//cout  << endl;
-	quickSort(vertices, 0, tam-1);
-	
-	
-//	cout << infoSubReg.betaConsumidores << "consumidor\n";
-	//cout << infoSubReg.betaDemanda << "demanda\n";
-	//cout << infoSubReg.betaCargaTrabalho << "carga\n";
-	
-	/*56.05consumidor
-	  201.95demanda
-	  201.5carga*/
+		DataVertice** vertices = new DataVertice*[tam];
+		for(int i=0; i<tam; i++){
+			vertices[i] = new DataVertice;
+			arq >> vertices[i]->id;
+			arq >> vertices[i]->x;
+			arq >> vertices[i]->y;
+			arq >> vertices[i]->consumidores;
+			arq >> vertices[i]->demanda;
+			arq >> vertices[i]->cargaTrabalho;
+		}
+		
+		arq >> arestas;
+		
+		for(int i=0; i<arestas; i++){
+			arq >> u;
+			arq >> v;
+			try{
+				grafo -> adicionarAresta(u, v, 1);
+			}
+			catch(EdgeInsertionException e){
+			}
+		}
+		
+		//arq >> qnt_subReg;
+		
+		InfoSubReg infoSubReg;
 
-	
-	SubRegioes **subReg = new SubRegioes*[infoSubReg.qntReg];	
-	for(int i=0; i<infoSubReg.qntReg; i++){
-		subReg[i] = new SubRegioes(tam);
+		arq >> infoSubReg.qntReg;
+		arq >> infoSubReg.lambdaConsumidores;
+		arq >> infoSubReg.lambdaDemanda;
+		arq >> infoSubReg.lambdaCargaTrabalho;
+		
+		
+		
+		arq.close();
+		
+		double somaConsu = 0;
+		double somaDeman = 0;
+		double somaCTrab = 0;
+		
+		for(int i = 0; i < tam; i++){
+			somaConsu += vertices[i]->consumidores;
+			somaDeman += vertices[i]->demanda;
+			somaCTrab += vertices[i]->cargaTrabalho;
+		}
+		
+		infoSubReg.betaConsumidores = (somaConsu/infoSubReg.qntReg);
+		infoSubReg.betaDemanda = (somaDeman/infoSubReg.qntReg);
+		infoSubReg.betaCargaTrabalho = (somaCTrab/infoSubReg.qntReg);
+		
+		
+		double auxConsumidores, auxDemanda, auxCargaTrabalho;
+		
+		
+		for(int i=0; i<tam; i++){
+			auxConsumidores = (vertices[i]->consumidores - infoSubReg.betaConsumidores) ;
+			auxDemanda = (vertices[i]->demanda - infoSubReg.betaDemanda);
+			auxCargaTrabalho = (vertices[i]->cargaTrabalho - infoSubReg.betaCargaTrabalho);
+			
+			auxConsumidores = (auxConsumidores > 0) ? auxConsumidores : auxConsumidores*(-1);
+			auxDemanda = (auxDemanda > 0) ? auxDemanda : auxDemanda*(-1);
+			auxCargaTrabalho = (auxCargaTrabalho > 0) ? auxCargaTrabalho : auxCargaTrabalho*(-1);
+			
+			vertices[i]->fuga = auxConsumidores + auxDemanda + auxCargaTrabalho;
+		}
+			
+		//cout  << endl;
+		quickSort(vertices, 0, tam-1);
+		
+		
+	//	cout << infoSubReg.betaConsumidores << "consumidor\n";
+		//cout << infoSubReg.betaDemanda << "demanda\n";
+		//cout << infoSubReg.betaCargaTrabalho << "carga\n";
+		
+		/*56.05consumidor
+		  201.95demanda
+		  201.5carga*/
+
+		
+		SubRegioes **subReg = new SubRegioes*[infoSubReg.qntReg];	
+		for(int i=0; i<infoSubReg.qntReg; i++){
+			subReg[i] = new SubRegioes(tam);
+		}
+		
+		for(int i=0; i < tam; i++){
+			cout << vertices[i]->fuga << " " << vertices[i]->id << "\n";
+		}
+		montarSubRegiao(grafo, vertices, infoSubReg, subReg);
+		
+		acharDescontinuidade(grafo, vertices, infoSubReg, subReg);
 	}
-	
-	for(int i=0; i < tam; i++){
-		cout << vertices[i]->fuga << " " << vertices[i]->id << "\n";
-	}
-	montarSubRegiao(grafo, vertices, infoSubReg, subReg);
 	return 0;
 }
