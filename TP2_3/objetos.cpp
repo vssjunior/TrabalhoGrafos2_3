@@ -94,9 +94,15 @@ public:
 	int capacidade;
 	int media;
 	double fuga;
-	double betaConsumidores;
-	double betaDemanda;
-	double betaCargaTrabalho;
+	double fugaConsumidores;
+	double fugaDemanda;
+	double fugaCargaTrabalho;
+	double mediaConsumidores;
+	double mediaDemanda;
+	double mediaCargaTrabalho;
+	double taxaConsumidores;
+	double taxaDemanda;
+	double taxaCargaTrabalho;
 	int quantidadeDeVertices;
 	
 	SubRegioes(){
@@ -111,43 +117,76 @@ public:
 			vertices[i] = new DataVertice;
 		}
 		tam = 0;
+		quantidadeDeVertices = 0;
 	}
 	
 	void calcularFuga(InfoSubReg info){
 		double auxConsumidores, auxDemanda, auxCargaTrabalho;
 		
+		auxConsumidores = 0;
+		auxDemanda = 0;
+		auxCargaTrabalho = 0;
+		
 		for(int i = 0; i < quantidadeDeVertices; i++){
-			auxConsumidores += (vertices[i]->consumidores - info.betaConsumidores) ;
-			auxDemanda += (vertices[i]->demanda - info.betaDemanda);
-			auxCargaTrabalho += (vertices[i]->cargaTrabalho - info.betaCargaTrabalho);
+			auxConsumidores += (vertices[i]->consumidores) ;
+			auxDemanda += (vertices[i]->demanda);
+			auxCargaTrabalho += (vertices[i]->cargaTrabalho);
 		}
 		
-		betaConsumidores = auxConsumidores;
-		betaDemanda = auxDemanda;
-		betaCargaTrabalho = auxCargaTrabalho;
-		
-		auxConsumidores = (auxConsumidores > 0) ? auxConsumidores : auxConsumidores*(-1);
-		auxDemanda = (auxDemanda > 0) ? auxDemanda : auxDemanda*(-1);
-		auxCargaTrabalho = (auxCargaTrabalho > 0) ? auxCargaTrabalho : auxCargaTrabalho*(-1);
-		
+		/*
 		auxConsumidores /= quantidadeDeVertices;
 		auxDemanda /= quantidadeDeVertices;
 		auxCargaTrabalho /= quantidadeDeVertices;
+		*/
 		
-		fuga = auxConsumidores + auxDemanda + auxCargaTrabalho;
+		mediaConsumidores = auxConsumidores;
+		mediaDemanda = auxDemanda;
+		mediaCargaTrabalho = auxCargaTrabalho;
+		
+		fugaConsumidores = auxConsumidores - info.betaConsumidores;
+		fugaDemanda = auxDemanda - info.betaDemanda;
+		fugaCargaTrabalho = auxCargaTrabalho - info.betaCargaTrabalho;
+		
+		fugaConsumidores *= (fugaConsumidores > 0) ? (1) : (-1);
+		fugaDemanda *= (fugaDemanda > 0) ? (1) : (-1);
+		fugaCargaTrabalho *= (fugaCargaTrabalho > 0) ? (1) : (-1);
+		
+		fuga = fugaConsumidores + fugaDemanda + fugaCargaTrabalho;
 	}
 	
 	double calcularFuga(InfoSubReg info, DataVertice* vertice){
 		double auxConsumidores, auxDemanda, auxCargaTrabalho;
 		
-		auxConsumidores = (vertice->consumidores - info.betaConsumidores) + betaConsumidores;
-		auxDemanda = (vertice->demanda - info.betaDemanda) + betaDemanda;
-		auxCargaTrabalho = (vertice->cargaTrabalho - info.betaCargaTrabalho) + betaCargaTrabalho;
+		auxConsumidores = vertice->consumidores;
+		auxDemanda = vertice->demanda;
+		auxCargaTrabalho = vertice->cargaTrabalho;
 		
-		auxConsumidores = (auxConsumidores > 0) ? auxConsumidores : auxConsumidores*(-1);
-		auxDemanda = (auxDemanda > 0) ? auxDemanda : auxDemanda*(-1);
-		auxCargaTrabalho = (auxCargaTrabalho > 0) ? auxCargaTrabalho : auxCargaTrabalho*(-1);
+		for(int i = 0; i < quantidadeDeVertices; i++){
+			auxConsumidores += (vertices[i]->consumidores) ;
+			auxDemanda += (vertices[i]->demanda);
+			auxCargaTrabalho += (vertices[i]->cargaTrabalho);
+		}
+		
+		/*
+		auxConsumidores /= (quantidadeDeVertices + 1);
+		auxDemanda /= (quantidadeDeVertices + 1);
+		auxCargaTrabalho /= (quantidadeDeVertices + 1);
+		*/
+		
+		auxConsumidores -= info.betaConsumidores;
+		auxDemanda -= info.betaDemanda;
+		auxCargaTrabalho -= info.betaCargaTrabalho;
+		
+		auxConsumidores *= (auxConsumidores > 0) ? (1) : (-1);
+		auxDemanda *= (auxDemanda > 0) ? (1) : (-1);
+		auxCargaTrabalho *= (auxCargaTrabalho > 0) ? (1) : (-1);
 		
 		return (auxConsumidores + auxDemanda + auxCargaTrabalho);
+	}
+	
+	void calcularTaxasLambda(InfoSubReg info) {
+		taxaConsumidores = mediaConsumidores/info.betaConsumidores;
+		taxaDemanda = mediaDemanda/info.betaDemanda;
+		taxaCargaTrabalho = mediaCargaTrabalho/info.betaCargaTrabalho;
 	}
 };

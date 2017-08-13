@@ -34,76 +34,105 @@ void quickSort(DataVertice** vertices , int left, int right) {
 
 void insertionSort(SubRegioes **subReg, int n)
 {
+	cout << "Chamou insert\n";
    int i, j;
-   double key;
-   for (i = 1; i < n; i++)
+   for (i = 1; i <= n; i++)
    {
-       key = subReg[i]->fuga;
-       j = i-1;
+       j = i;
  
-       
-       while (j >= 0 && subReg[j]->fuga > key)
+       cout << subReg[j-1]->fuga << " <-------> " << subReg[j]->fuga << endl;
+       while (j > 0 && subReg[j-1]->fuga > subReg[j]->fuga)
        {
-		   SubRegioes* aux = subReg[j+1];
-           subReg[j+1] = subReg[j];
-           subReg[j] = aux;
-           j = j-1;
+		   SubRegioes* aux = subReg[j];
+           subReg[j] = subReg[j-1];
+           subReg[j-1] = aux;
+           j--;
        }
-       //subReg[j+1].fuga = key;
    }
 }
 
-void montarSubRegiao(Grafo* grafo, DataVertice** vertices, InfoSubReg infoSubReg, SubRegioes **subReg, double mediaConsumidor, double mediaDemanda, double mediaCargaTrabalho, int qntSubRegiao){
-	for(int i=0; i<qntSubRegiao; i++){
+void montarSubRegiao(Grafo* grafo, DataVertice** vertices, InfoSubReg infoSubReg, SubRegioes **subReg){
+	for(int i=0; i<infoSubReg.qntReg; i++){
 		
 		subReg[i]->vertices[0] = vertices[i];
+		vertices[i]->adicionado = true;
+		subReg[i]->fuga = vertices[i]->fuga;
 		subReg[i]->quantidadeDeVertices++;
-		subReg[i]->calcularFuga(infoSubReg);
+		//cout << "subReg[" << i <<"]->vertices[0] = " << vertices[i]->id <<";\n"; 
 	}
 	
-	int aux = qntSubRegiao-1;
-	double menorFuga = (vertices[grafo->getQuantVertices()-1]->fuga)+1;
+	int aux = infoSubReg.qntReg -1, pos;
+	double menorFuga = 1000000;
 	double fugaAchada;
 	int menorFugaVertice;
 	bool achou = false, acabou = false;
+	
 	while(aux >= 0){
-		for(int i=0; i < subReg[aux]->quantidadeDeVertices; i++){
-			List vizinhos = grafo -> getVizinhos(vertices[i]->id);
+		for(int i = 0; i < subReg[aux]->quantidadeDeVertices; i++){
+			List vizinhos = grafo -> getVizinhos(subReg[aux]->vertices[i]->id);
 
-			for(int i = 0; i < vizinhos.size(); i++){  
-				int v = vizinhos.get(i).getVerticeAlvo();
-				fugaAchada = subReg[aux]->calcularFuga(infoSubReg, vertices[v]);
-				if(fugaAchada < menorFuga and !vertices[v]->adicionado){
+			for(int j = 0; j < vizinhos.size(); j++){  
+				int v = vizinhos.get(j).getVerticeAlvo();
+				cout << subReg[aux]->vertices[i]->id << " -> " << v << "    aux: " << aux <<"\n";
+				
+				for(int k = 0; k < grafo->getQuantVertices(); k++){
+					if(vertices[k]->id == v){
+						pos = k;
+					}
+				}
+				
+				fugaAchada = subReg[aux]->calcularFuga(infoSubReg, vertices[pos]);
+				cout << "Fuga Achada: " << fugaAchada << "\n";
+				if(fugaAchada < menorFuga and !vertices[pos]->adicionado){
 					menorFuga = fugaAchada;
-					menorFugaVertice = v;
+					menorFugaVertice = pos;
 					achou = true;
 					acabou = true;
 				}
-				else {
-					acabou = false;
-				}
 			}
 		}
+		cout << "Menor fuga Vertice: " << menorFugaVertice << "\n";
 		if(achou){
-			subReg[aux]->vertices[subReg[aux]->quantidadeDeVertices-1] = vertices[menorFugaVertice];
+			subReg[aux]->vertices[subReg[aux]->quantidadeDeVertices] = vertices[menorFugaVertice];
+			vertices[menorFugaVertice]->adicionado = true;
 			subReg[aux]->quantidadeDeVertices ++;
 			subReg[aux]->calcularFuga(infoSubReg);
 			insertionSort(subReg, aux);
+			for(int i=0; i<3; i++){
+				cout << subReg[i]->fuga << "  " << i << "  ";
+			} cout << "\n";
 		}
+		//cout << subReg[aux] -> quantidadeDeVertices << "aux->" <<aux << "\n";
 		if(!acabou){
 			aux--;
 		}
 		
-		menorFuga = (vertices[grafo->getQuantVertices()-1]->fuga)+1;
+		menorFuga = 1000000;
 		achou = false;
 		acabou = false;
-	}
-	
-	
-	for(int i=0; i<qntSubRegiao; i++){
 		
-		cout << subReg[i] -> quantidadeDeVertices << "\n";
+		
 	}
+	
+	
+	for(int i=0; i<infoSubReg.qntReg; i++){
+		subReg[i] -> calcularTaxasLambda(infoSubReg);
+		cout << "\nQuantidade de pontos de referência: ";
+		cout << subReg[i] -> quantidadeDeVertices << "\n";
+		cout << "Valor das Fugas dos valores esperados:\n";
+		cout << subReg[i] -> fugaConsumidores << "\n";
+		cout << subReg[i] -> fugaDemanda << "\n";
+		cout << subReg[i] -> fugaCargaTrabalho << "\n";
+		cout << "Os 3 lamdas:\n";
+		cout << "Lambda Consumidores:      " << subReg[i] -> taxaConsumidores << endl;
+		cout << "Lambda Demanda:           " << subReg[i] -> taxaDemanda << endl;
+		cout << "Lambda Carga de trabalho: " << subReg[i] -> taxaCargaTrabalho << endl << endl;
+	}
+	
+	cout << "\n" <<infoSubReg.betaConsumidores << "\n";
+	cout << infoSubReg.betaDemanda << "\n";
+	cout << infoSubReg.betaCargaTrabalho << "\n";
+	
 	
 	/*bool adicionou = false;
 	int j = 0;
@@ -141,7 +170,7 @@ int main(){
 	int tam, arestas, u, v;
 	//string nomeArq = (argv[1]);
 	//nomeArq += ".txt";
-	ifstream arq("instance.input");
+	ifstream arq("instances/n500-m1479-k15-2.input");
 	
 	arq >> tam;
 	grafo = new ListaDeAdjacencia(false);
@@ -193,9 +222,9 @@ int main(){
 		somaCTrab += vertices[i]->cargaTrabalho;
 	}
 	
-	infoSubReg.betaConsumidores = (somaConsu/tam);
-	infoSubReg.betaDemanda = (somaDeman/tam);
-	infoSubReg.betaCargaTrabalho = (somaCTrab/tam);
+	infoSubReg.betaConsumidores = (somaConsu/infoSubReg.qntReg);
+	infoSubReg.betaDemanda = (somaDeman/infoSubReg.qntReg);
+	infoSubReg.betaCargaTrabalho = (somaCTrab/infoSubReg.qntReg);
 	
 	
 	double auxConsumidores, auxDemanda, auxCargaTrabalho;
@@ -217,18 +246,23 @@ int main(){
 	quickSort(vertices, 0, tam-1);
 	
 	
-	//cout << infoSubReg.betaConsumidores << "consumidor\n";
+//	cout << infoSubReg.betaConsumidores << "consumidor\n";
 	//cout << infoSubReg.betaDemanda << "demanda\n";
 	//cout << infoSubReg.betaCargaTrabalho << "carga\n";
+	
+	/*56.05consumidor
+	  201.95demanda
+	  201.5carga*/
+
 	
 	SubRegioes **subReg = new SubRegioes*[infoSubReg.qntReg];	
 	for(int i=0; i<infoSubReg.qntReg; i++){
 		subReg[i] = new SubRegioes(tam);
 	}
 	
-	/*for(int i=0; i < tam; i++){
+	for(int i=0; i < tam; i++){
 		cout << vertices[i]->fuga << " " << vertices[i]->id << "\n";
-	}*/
-	montarSubRegiao(grafo, vertices, infoSubReg, subReg, infoSubReg.betaConsumidores, infoSubReg.betaDemanda, infoSubReg.betaCargaTrabalho, infoSubReg.qntReg);
+	}
+	montarSubRegiao(grafo, vertices, infoSubReg, subReg);
 	return 0;
 }
